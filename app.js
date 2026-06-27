@@ -14,16 +14,16 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// ── 2. MAPEO DE NÚCLEOS FAMILIARES ───────────────────────────
-const NUCLEOS = {
-  nucleo1: { nombre: 'Núcleo 1', integrantes: ['Ale', 'Edu'] },
-  nucleo2: { nombre: 'Núcleo 2', integrantes: ['Adri', 'Andy'] },
+// ── 2. MAPEO DE CASAS ────────────────────────────────────────
+const CASAS = {
+  casa1: { nombre: 'Casa de Edu y Ale', integrantes: ['Ale', 'Edu'] },
+  casa2: { nombre: 'Casa de Andy y Adri', integrantes: ['Adri', 'Andy'] },
 };
 
-// Mapa rápido: usuario → núcleo
-const USUARIO_A_NUCLEO = {};
-Object.entries(NUCLEOS).forEach(([id, nucleo]) => {
-  nucleo.integrantes.forEach(u => { USUARIO_A_NUCLEO[u] = id; });
+// Mapa rápido: usuario → casa
+const USUARIO_A_CASA = {};
+Object.entries(CASAS).forEach(([id, casa]) => {
+  casa.integrantes.forEach(u => { USUARIO_A_CASA[u] = id; });
 });
 
 // ── 3. VARIABLES DE ESTADO LOCAL ──────────────────────────────
@@ -101,9 +101,9 @@ function formatFecha(isoString) {
 // ── 6. LÓGICA MATEMÁTICA DE SALDOS ──────────────────────────
 
 /**
- * Procesa el array de gastos y calcula los saldos de cada núcleo.
+ * Procesa el array de gastos y calcula los saldos de cada casa.
  * @param {Array<{usuario: string, monto: number}>} gastos
- * @returns {{ totalGeneral, cuota, nucleo1: {pagado, saldo}, nucleo2: {pagado, saldo} }}
+ * @returns {{ totalGeneral, cuota, casa1: {pagado, saldo}, casa2: {pagado, saldo} }}
  */
 function calcularSaldos(gastos) {
   let totalN1 = 0;
@@ -111,8 +111,8 @@ function calcularSaldos(gastos) {
 
   gastos.forEach(({ usuario, monto }) => {
     const m = parseFloat(monto) || 0;
-    if (USUARIO_A_NUCLEO[usuario] === 'nucleo1') totalN1 += m;
-    if (USUARIO_A_NUCLEO[usuario] === 'nucleo2') totalN2 += m;
+    if (USUARIO_A_CASA[usuario] === 'casa1') totalN1 += m;
+    if (USUARIO_A_CASA[usuario] === 'casa2') totalN2 += m;
   });
 
   const totalGeneral = totalN1 + totalN2;
@@ -121,8 +121,8 @@ function calcularSaldos(gastos) {
   return {
     totalGeneral,
     cuota,
-    nucleo1: { pagado: totalN1, saldo: totalN1 - cuota },
-    nucleo2: { pagado: totalN2, saldo: totalN2 - cuota },
+    casa1: { pagado: totalN1, saldo: totalN1 - cuota },
+    casa2: { pagado: totalN2, saldo: totalN2 - cuota },
   };
 }
 
@@ -144,23 +144,23 @@ function estadoBadge(saldo) {
  * @param {object} saldos — resultado de calcularSaldos()
  */
 function actualizarDashboard(saldos) {
-  const { totalGeneral, cuota, nucleo1, nucleo2 } = saldos;
+  const { totalGeneral, cuota, casa1, casa2 } = saldos;
 
   elems.totalGeneral.textContent = formatMoneda(totalGeneral);
   elems.cuotaNucleo.textContent  = formatMoneda(cuota);
 
-  // Núcleo 1
-  elems.pagadoN1.textContent = formatMoneda(nucleo1.pagado);
-  elems.saldoN1.textContent  = formatMoneda(nucleo1.saldo);
-  const bn1 = estadoBadge(nucleo1.saldo);
+  // Casa 1 (Edu y Ale)
+  elems.pagadoN1.textContent = formatMoneda(casa1.pagado);
+  elems.saldoN1.textContent  = formatMoneda(casa1.saldo);
+  const bn1 = estadoBadge(casa1.saldo);
   elems.saldoN1.className  = `saldo-valor ${bn1.clase}`;
   elems.badgeN1.textContent = bn1.texto;
   elems.badgeN1.className  = `saldo-badge ${bn1.clase}`;
 
-  // Núcleo 2
-  elems.pagadoN2.textContent = formatMoneda(nucleo2.pagado);
-  elems.saldoN2.textContent  = formatMoneda(nucleo2.saldo);
-  const bn2 = estadoBadge(nucleo2.saldo);
+  // Casa 2 (Andy y Adri)
+  elems.pagadoN2.textContent = formatMoneda(casa2.pagado);
+  elems.saldoN2.textContent  = formatMoneda(casa2.saldo);
+  const bn2 = estadoBadge(casa2.saldo);
   elems.saldoN2.className  = `saldo-valor ${bn2.clase}`;
   elems.badgeN2.textContent = bn2.texto;
   elems.badgeN2.className  = `saldo-badge ${bn2.clase}`;
@@ -185,19 +185,19 @@ function renderTabla(gastos) {
   elems.tablaWrapper.hidden = false;
 
   elems.tablaBody.innerHTML = gastos.map(g => {
-    const nucleoId  = USUARIO_A_NUCLEO[g.usuario] || 'nucleo1';
-    const nucleoNum = nucleoId === 'nucleo1' ? '1' : '2';
-    const nucleoClass = nucleoId === 'nucleo1' ? 'n1' : 'n2';
+    const casaId  = USUARIO_A_CASA[g.usuario] || 'casa1';
+    const casaNom = casaId === 'casa1' ? 'Edu/Ale' : 'Andy/Adri';
+    const casaClass = casaId === 'casa1' ? 'n1' : 'n2';
     const userClass   = g.usuario.toLowerCase();
 
     return `
       <tr data-id="${g.id}">
-        <td><span class="fecha-texto">${formatFecha(g.fecha)}</span></td>
-        <td><span class="badge-usuario badge-${userClass}">${g.usuario}</span></td>
-        <td><span class="badge-nucleo ${nucleoClass}">Núcleo ${nucleoNum}</span></td>
-        <td>${escapeHtml(g.detalle)}</td>
-        <td class="col-monto">${formatMoneda(parseFloat(g.monto))}</td>
-        <td class="col-acciones">
+        <td data-label="Fecha"><span class="fecha-texto">${formatFecha(g.fecha)}</span></td>
+        <td data-label="Quién"><span class="badge-usuario badge-${userClass}">${g.usuario}</span></td>
+        <td data-label="Casa"><span class="badge-nucleo ${casaClass}">Casa ${casaNom}</span></td>
+        <td data-label="Detalle">${escapeHtml(g.detalle)}</td>
+        <td data-label="Monto" class="col-monto">${formatMoneda(parseFloat(g.monto))}</td>
+        <td data-label="Acciones" class="col-acciones">
           <div class="acciones-wrapper">
             <button type="button" class="btn-icon btn-edit" title="Editar gasto">✏️</button>
             <button type="button" class="btn-icon btn-delete" title="Eliminar gasto">🗑️</button>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GastosCumple 🎂 — Gestión de Gastos Compartidos</title>
-  <meta name="description" content="App privada para gestionar y dividir los gastos del cumpleaños compartido entre los 4 amigos." />
+  <meta name="description" content="App privada para gestionar y dividir los gastos del cumpleaños compartido." />
 
   <!-- Fuente Inter desde Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -19,7 +19,7 @@
   <header class="app-header">
     <div class="header-inner">
       <div class="header-brand">
-        <span class="header-emoji">🎂</span>
+        <img class="header-avatar" src="foto_cumple.jpg" alt="Homenajeados" />
         <div>
           <h1 class="header-title">GastosCumple</h1>
           <p class="header-subtitle">Gestión de gastos compartidos</p>
@@ -35,62 +35,7 @@
   <!-- ===== MAIN ===== -->
   <main class="app-main">
 
-    <!-- ── DASHBOARD ── -->
-    <section class="dashboard" aria-label="Resumen financiero">
-
-      <!-- Card: Total General -->
-      <div class="card card--total" id="card-total">
-        <p class="card-label">Total General</p>
-        <p class="card-value" id="total-general">$0,00</p>
-        <p class="card-hint">suma de todos los gastos</p>
-      </div>
-
-      <!-- Card: Cuota por Núcleo -->
-      <div class="card card--cuota" id="card-cuota">
-        <p class="card-label">Cuota por Núcleo</p>
-        <p class="card-value" id="cuota-nucleo">$0,00</p>
-        <p class="card-hint">total ÷ 2</p>
-      </div>
-
-      <!-- Card: Núcleo 1 -->
-      <div class="card card--nucleo" id="card-nucleo1">
-        <div class="nucleo-header">
-          <div>
-            <p class="card-label">Núcleo 1</p>
-            <p class="nucleo-integrantes">Ale &amp; Edu</p>
-          </div>
-          <span class="nucleo-icon">👫</span>
-        </div>
-        <p class="card-value" id="pagado-nucleo1">$0,00</p>
-        <p class="card-hint">total pagado</p>
-        <div class="saldo-container">
-          <span class="saldo-label">Saldo:</span>
-          <span class="saldo-valor" id="saldo-nucleo1">$0,00</span>
-          <span class="saldo-badge" id="badge-nucleo1">Al día ✓</span>
-        </div>
-      </div>
-
-      <!-- Card: Núcleo 2 -->
-      <div class="card card--nucleo" id="card-nucleo2">
-        <div class="nucleo-header">
-          <div>
-            <p class="card-label">Núcleo 2</p>
-            <p class="nucleo-integrantes">Adri &amp; Andy</p>
-          </div>
-          <span class="nucleo-icon">👫</span>
-        </div>
-        <p class="card-value" id="pagado-nucleo2">$0,00</p>
-        <p class="card-hint">total pagado</p>
-        <div class="saldo-container">
-          <span class="saldo-label">Saldo:</span>
-          <span class="saldo-valor" id="saldo-nucleo2">$0,00</span>
-          <span class="saldo-badge" id="badge-nucleo2">Al día ✓</span>
-        </div>
-      </div>
-
-    </section>
-
-    <!-- ── FORMULARIO ── -->
+    <!-- ── FORMULARIO (PRIMERO) ── -->
     <section class="section-form" aria-label="Ingresar nuevo gasto">
       <div class="section-header">
         <h2 class="section-title">➕ Nuevo Gasto</h2>
@@ -164,7 +109,62 @@
       </form>
     </section>
 
-    <!-- ── HISTORIAL ── -->
+    <!-- ── DASHBOARD (SEGUNDO) ── -->
+    <section class="dashboard" aria-label="Resumen financiero">
+
+      <!-- Card: Total General -->
+      <div class="card card--total" id="card-total">
+        <p class="card-label">Total General</p>
+        <p class="card-value" id="total-general">$0,00</p>
+        <p class="card-hint">suma de todos los gastos</p>
+      </div>
+
+      <!-- Card: Cuota por Casa -->
+      <div class="card card--cuota" id="card-cuota">
+        <p class="card-label">Cuota por Casa</p>
+        <p class="card-value" id="cuota-nucleo">$0,00</p>
+        <p class="card-hint">total ÷ 2</p>
+      </div>
+
+      <!-- Card: Casa de Edu y Ale -->
+      <div class="card card--nucleo" id="card-nucleo1">
+        <div class="nucleo-header">
+          <div>
+            <p class="card-label">Casa de Edu y Ale</p>
+            <p class="nucleo-integrantes">Ale &amp; Edu</p>
+          </div>
+          <span class="nucleo-icon">🏠</span>
+        </div>
+        <p class="card-value" id="pagado-nucleo1">$0,00</p>
+        <p class="card-hint">total pagado</p>
+        <div class="saldo-container">
+          <span class="saldo-label">Saldo:</span>
+          <span class="saldo-valor" id="saldo-nucleo1">$0,00</span>
+          <span class="saldo-badge" id="badge-nucleo1">Al día ✓</span>
+        </div>
+      </div>
+
+      <!-- Card: Casa de Andy y Adri -->
+      <div class="card card--nucleo" id="card-nucleo2">
+        <div class="nucleo-header">
+          <div>
+            <p class="card-label">Casa de Andy y Adri</p>
+            <p class="nucleo-integrantes">Adri &amp; Andy</p>
+          </div>
+          <span class="nucleo-icon">🏠</span>
+        </div>
+        <p class="card-value" id="pagado-nucleo2">$0,00</p>
+        <p class="card-hint">total pagado</p>
+        <div class="saldo-container">
+          <span class="saldo-label">Saldo:</span>
+          <span class="saldo-valor" id="saldo-nucleo2">$0,00</span>
+          <span class="saldo-badge" id="badge-nucleo2">Al día ✓</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── HISTORIAL (TERCERO) ── -->
     <section class="section-historial" aria-label="Historial de gastos">
       <div class="section-header">
         <h2 class="section-title">📋 Historial de Gastos</h2>
@@ -191,7 +191,7 @@
             <tr>
               <th>Fecha</th>
               <th>Quién</th>
-              <th>Núcleo</th>
+              <th>Casa</th>
               <th>Detalle</th>
               <th class="col-monto">Monto</th>
               <th class="col-acciones">Acciones</th>

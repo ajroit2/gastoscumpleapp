@@ -388,7 +388,7 @@ body::before {
   .form-gasto .field-group:last-of-type {
     grid-column: 1 / -1;
   }
-  #btn-guardar {
+  .form-actions {
     grid-column: 1 / -1;
   }
   #form-feedback {
@@ -408,6 +408,16 @@ body::before {
   color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: .07em;
+}
+
+/* Contenedor de botones de acción en el formulario */
+.form-actions {
+  display: flex;
+  gap: .75rem;
+}
+
+.form-actions button {
+  flex: 1;
 }
 
 /* Select */
@@ -702,6 +712,70 @@ input::placeholder { color: var(--text-muted); }
 
 /* ── Utilidades ───────────────────────────────────────────── */
 [hidden] { display: none !important; }
+
+/* Botón secundario */
+.btn-secondary {
+  background: rgba(255,255,255,.05);
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: .9rem;
+  font-weight: 600;
+  padding: .8rem 1.2rem;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(255,255,255,.1);
+  color: var(--text-primary);
+  border-color: rgba(255,255,255,.2);
+}
+
+.btn-secondary:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+/* Columna y botones de acciones en la tabla */
+.col-acciones {
+  text-align: center;
+  width: 90px;
+}
+
+.acciones-wrapper {
+  display: flex;
+  gap: .4rem;
+  justify-content: center;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1.05rem;
+  padding: .35rem;
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.btn-icon:hover {
+  background: rgba(255,255,255,.08);
+  transform: scale(1.15);
+}
+
+.btn-delete:hover {
+  background: var(--danger-bg);
+}
+
+.btn-edit:hover {
+  background: rgba(6,182,212,.15);
+}
 
 /* Scrollbar estilizada (webkit) */
 ::-webkit-scrollbar             { width: 6px; height: 6px; }

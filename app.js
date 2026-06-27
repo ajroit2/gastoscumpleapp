@@ -26,7 +26,11 @@ Object.entries(NUCLEOS).forEach(([id, nucleo]) => {
   nucleo.integrantes.forEach(u => { USUARIO_A_NUCLEO[u] = id; });
 });
 
-// ── 3. REFERENCIAS AL DOM ────────────────────────────────────
+// ── 3. VARIABLES DE ESTADO LOCAL ──────────────────────────────
+let editGastoId = null;     // ID del gasto que se está editando (null si estamos en modo creación)
+let listadoGastos = [];     // Caché local de los gastos cargados
+
+// ── 4. REFERENCIAS AL DOM ────────────────────────────────────
 const elems = {
   // Dashboard
   totalGeneral:   document.getElementById('total-general'),
@@ -44,6 +48,7 @@ const elems = {
   inputDetalle:   document.getElementById('input-detalle'),
   inputMonto:     document.getElementById('input-monto'),
   btnGuardar:     document.getElementById('btn-guardar'),
+  btnCancelar:    document.getElementById('btn-cancelar'),
   btnText:        document.querySelector('#btn-guardar .btn-text'),
   btnSpinner:     document.querySelector('#btn-guardar .btn-spinner'),
   feedback:       document.getElementById('form-feedback'),
@@ -62,7 +67,7 @@ const elems = {
   anio:           document.getElementById('anio'),
 };
 
-// ── 4. HELPERS DE FORMATO ────────────────────────────────────
+// ── 5. HELPERS DE FORMATO ────────────────────────────────────
 
 /**
  * Formatea un número como moneda argentina.
@@ -93,7 +98,7 @@ function formatFecha(isoString) {
   }).format(new Date(isoString));
 }
 
-// ── 5. LÓGICA MATEMÁTICA DE SALDOS ──────────────────────────
+// ── 6. LÓGICA MATEMÁTICA DE SALDOS ──────────────────────────
 
 /**
  * Procesa el array de gastos y calcula los saldos de cada núcleo.
@@ -132,7 +137,7 @@ function estadoBadge(saldo) {
   return { clase: '', texto: 'Al día ✓' };
 }
 
-// ── 6. ACTUALIZACIÓN DEL DOM ─────────────────────────────────
+// ── 7. ACTUALIZACIÓN DEL DOM ─────────────────────────────────
 
 /**
  * Actualiza las cards del dashboard con los saldos calculados.
@@ -186,12 +191,18 @@ function renderTabla(gastos) {
     const userClass   = g.usuario.toLowerCase();
 
     return `
-      <tr>
+      <tr data-id="${g.id}">
         <td><span class="fecha-texto">${formatFecha(g.fecha)}</span></td>
         <td><span class="badge-usuario badge-${userClass}">${g.usuario}</span></td>
         <td><span class="badge-nucleo ${nucleoClass}">Núcleo ${nucleoNum}</span></td>
         <td>${escapeHtml(g.detalle)}</td>
         <td class="col-monto">${formatMoneda(parseFloat(g.monto))}</td>
+        <td class="col-acciones">
+          <div class="acciones-wrapper">
+            <button type="button" class="btn-icon btn-edit" title="Editar gasto">✏️</button>
+            <button type="button" class="btn-icon btn-delete" title="Eliminar gasto">🗑️</button>
+          </div>
+        </td>
       </tr>
     `;
   }).join('');
@@ -208,7 +219,7 @@ function escapeHtml(str) {
   return div.innerHTML;
 }
 
-// ── 7. LECTURA DESDE SUPABASE ────────────────────────────────
+// ── 8. LECTURA DESDE SUPABASE ────────────────────────────────
 
 /**
  * Carga todos los gastos desde la tabla `gastos` y actualiza la UI.
@@ -216,20 +227,23 @@ function escapeHtml(str) {
  */
 async function cargarGastos() {
   try {
-    const { data: gastos, error } = await supabase
+    const { data: dataGastos, error } = await supabase
       .from('gastos')
       .select('*')
       .order('fecha', { ascending: false });
 
     if (error) throw error;
 
+    // Actualizar caché local
+    listadoGastos = dataGastos || [];
+
     // Actualizar saldos en dashboard
-    const saldos = calcularSaldos(gastos);
+    const saldos = calcularSaldos(listadoGastos);
     actualizarDashboard(saldos);
 
     // Ocultar loading y renderizar tabla
     elems.tablaLoading.hidden = true;
-    renderTabla(gastos);
+    renderTabla(listadoGastos);
 
     // Marcar como conectado
     setConexionEstado('conectado');
@@ -243,7 +257,7 @@ async function cargarGastos() {
   }
 }
 
-// ── 8. ESCRITURA EN SUPABASE ─────────────────────────────────
+// ── 9. ESCRITURA / MODIFICACIÓN / BORRADO EN SUPABASE ──────────
 
 /**
  * Inserta un nuevo gasto en la tabla `gastos`.
@@ -264,7 +278,46 @@ async function guardarGasto(usuario, detalle, monto) {
   return true;
 }
 
-// ── 9. MANEJO DEL FORMULARIO ─────────────────────────────────
+/**
+ * Actualiza un gasto existente en Supabase.
+ * @param {number} id
+ * @param {string} usuario
+ * @param {string} detalle
+ * @param {number} monto
+ * @returns {Promise<boolean>}
+ */
+async function actualizarGasto(id, usuario, detalle, monto) {
+  const { error } = await supabase
+    .from('gastos')
+    .update({ usuario, detalle, monto })
+    .eq('id', id);
+
+  if (error) {
+    console.error(`[GastosCumple] Error al actualizar gasto con ID ${id}:`, error);
+    return false;
+  }
+  return true;
+}
+
+/**
+ * Elimina un gasto de Supabase.
+ * @param {number} id
+ * @returns {Promise<boolean>}
+ */
+async function eliminarGasto(id) {
+  const { error } = await supabase
+    .from('gastos')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error(`[GastosCumple] Error al eliminar gasto con ID ${id}:`, error);
+    return false;
+  }
+  return true;
+}
+
+// ── 10. MANEJO DEL FORMULARIO E INTERACCIONES ─────────────────
 
 /**
  * Muestra u oculta el estado de carga del botón.
@@ -272,6 +325,7 @@ async function guardarGasto(usuario, detalle, monto) {
  */
 function setBtnLoading(loading) {
   elems.btnGuardar.disabled  = loading;
+  if (elems.btnCancelar) elems.btnCancelar.disabled = loading;
   elems.btnText.hidden       = loading;
   elems.btnSpinner.hidden    = !loading;
 }
@@ -287,6 +341,41 @@ function mostrarFeedback(mensaje, tipo) {
   elems.feedback.hidden       = false;
   // Auto-ocultar después de 4 segundos
   setTimeout(() => { elems.feedback.hidden = true; }, 4000);
+}
+
+/**
+ * Activa el modo edición para un gasto específico.
+ * @param {number} id
+ */
+function activarEdicionGasto(id) {
+  const gasto = listadoGastos.find(g => g.id == id);
+  if (!gasto) return;
+
+  editGastoId = id;
+
+  // Llenar campos
+  elems.selectUsuario.value = gasto.usuario;
+  elems.inputDetalle.value   = gasto.detalle;
+  elems.inputMonto.value     = gasto.monto;
+
+  // Actualizar UI del formulario
+  elems.btnText.textContent  = 'Actualizar Gasto';
+  elems.btnCancelar.hidden    = false;
+
+  // Hacer scroll suave hacia el formulario
+  document.querySelector('.section-form').scrollIntoView({ behavior: 'smooth' });
+}
+
+/**
+ * Cancela el modo de edición y limpia el formulario.
+ */
+function cancelarEdicionGasto() {
+  editGastoId = null;
+  elems.form.reset();
+
+  // Restaurar UI del formulario
+  elems.btnText.textContent  = 'Guardar Gasto';
+  elems.btnCancelar.hidden    = true;
 }
 
 // Listener del formulario
@@ -314,26 +403,75 @@ elems.form.addEventListener('submit', async (e) => {
     return;
   }
 
-  // Guardar en Supabase
   setBtnLoading(true);
-  const exito = await guardarGasto(usuario, detalle, monto);
+  
+  let exito = false;
+  if (editGastoId) {
+    // Modo Edición
+    exito = await actualizarGasto(editGastoId, usuario, detalle, monto);
+  } else {
+    // Modo Creación
+    exito = await guardarGasto(usuario, detalle, monto);
+  }
+
   setBtnLoading(false);
 
   if (exito) {
-    mostrarFeedback(`✅ Gasto de ${formatMoneda(monto)} guardado para ${usuario}.`, 'exito');
-    elems.form.reset();
-    // Recargar tabla y dashboard (el Realtime también lo haría automáticamente)
+    mostrarFeedback(
+      editGastoId 
+        ? `✅ Gasto actualizado con éxito.` 
+        : `✅ Gasto de ${formatMoneda(monto)} guardado para ${usuario}.`, 
+      'exito'
+    );
+    cancelarEdicionGasto();
+    // Recargar tabla y dashboard
     await cargarGastos();
   } else {
-    mostrarFeedback('❌ Hubo un error al guardar. Intentá de nuevo.', 'error');
+    mostrarFeedback('❌ Hubo un error al procesar el gasto. Intentá de nuevo.', 'error');
   }
 });
 
-// ── 10. SUSCRIPCIÓN REALTIME ─────────────────────────────────
+// Listener del botón Cancelar
+elems.btnCancelar.addEventListener('click', cancelarEdicionGasto);
+
+// Delegación de eventos en la tabla para Editar y Eliminar
+elems.tablaBody.addEventListener('click', async (e) => {
+  const btnIcon = e.target.closest('.btn-icon');
+  if (!btnIcon) return;
+
+  const tr = btnIcon.closest('tr');
+  const id = tr.dataset.id;
+
+  if (btnIcon.classList.contains('btn-edit')) {
+    activarEdicionGasto(id);
+  } 
+  else if (btnIcon.classList.contains('btn-delete')) {
+    const gasto = listadoGastos.find(g => g.id == id);
+    const detalleGasto = gasto ? `"${gasto.detalle}" por ${formatMoneda(gasto.monto)}` : 'este gasto';
+
+    if (confirm(`¿Estás seguro de que querés eliminar ${detalleGasto}?`)) {
+      setConexionEstado('conectando');
+      const exito = await eliminarGasto(id);
+      if (exito) {
+        mostrarFeedback('🗑️ Gasto eliminado correctamente.', 'exito');
+        // Si estábamos editando el mismo que borramos, reseteamos el form
+        if (editGastoId == id) {
+          cancelarEdicionGasto();
+        }
+        await cargarGastos();
+      } else {
+        mostrarFeedback('❌ Error al eliminar el gasto.', 'error');
+        setConexionEstado('conectado');
+      }
+    }
+  }
+});
+
+// ── 11. SUSCRIPCIÓN REALTIME ─────────────────────────────────
 
 /**
  * Activa la suscripción Realtime de Supabase para que la app
- * se actualice automáticamente cuando otro usuario carga un gasto.
+ * se actualice automáticamente cuando otro usuario carga, edita o borra un gasto.
  */
 function activarRealtime() {
   supabase
@@ -351,7 +489,7 @@ function activarRealtime() {
     });
 }
 
-// ── 11. ESTADO DE CONEXIÓN ───────────────────────────────────
+// ── 12. ESTADO DE CONEXIÓN ───────────────────────────────────
 
 /**
  * Actualiza el badge de conexión en el header.
@@ -367,7 +505,7 @@ function setConexionEstado(estado) {
   elems.conexionEstado.querySelector('.badge-text').textContent = textos[estado] || estado;
 }
 
-// ── 12. INICIALIZACIÓN ───────────────────────────────────────
+// ── 13. INICIALIZACIÓN ───────────────────────────────────────
 
 /**
  * Punto de entrada principal de la aplicación.

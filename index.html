@@ -143,15 +143,20 @@
           </div>
         </div>
 
-        <!-- Botón Guardar -->
-        <button type="submit" id="btn-guardar" class="btn-primary">
-          <span class="btn-text">Guardar Gasto</span>
-          <span class="btn-spinner" hidden>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-            </svg>
-          </span>
-        </button>
+        <!-- Botones Guardar y Cancelar -->
+        <div class="form-actions">
+          <button type="submit" id="btn-guardar" class="btn-primary">
+            <span class="btn-text">Guardar Gasto</span>
+            <span class="btn-spinner" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+              </svg>
+            </span>
+          </button>
+          <button type="button" id="btn-cancelar" class="btn-secondary" hidden>
+            Cancelar Edición
+          </button>
+        </div>
 
         <!-- Feedback -->
         <div id="form-feedback" class="form-feedback" hidden></div>
@@ -189,6 +194,7 @@
               <th>Núcleo</th>
               <th>Detalle</th>
               <th class="col-monto">Monto</th>
+              <th class="col-acciones">Acciones</th>
             </tr>
           </thead>
           <tbody id="tabla-body">

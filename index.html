@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GastosCumple 🎂 — Gestión de Gastos Compartidos</title>
+  <meta name="description" content="App privada para gestionar y dividir los gastos del cumpleaños compartido entre los 4 amigos." />
+
+  <!-- Fuente Inter desde Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-brand">
+        <span class="header-emoji">🎂</span>
+        <div>
+          <h1 class="header-title">GastosCumple</h1>
+          <p class="header-subtitle">Gestión de gastos compartidos</p>
+        </div>
+      </div>
+      <div class="header-badge" id="conexion-estado">
+        <span class="badge-dot"></span>
+        <span class="badge-text">Conectando…</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== MAIN ===== -->
+  <main class="app-main">
+
+    <!-- ── DASHBOARD ── -->
+    <section class="dashboard" aria-label="Resumen financiero">
+
+      <!-- Card: Total General -->
+      <div class="card card--total" id="card-total">
+        <p class="card-label">Total General</p>
+        <p class="card-value" id="total-general">$0,00</p>
+        <p class="card-hint">suma de todos los gastos</p>
+      </div>
+
+      <!-- Card: Cuota por Núcleo -->
+      <div class="card card--cuota" id="card-cuota">
+        <p class="card-label">Cuota por Núcleo</p>
+        <p class="card-value" id="cuota-nucleo">$0,00</p>
+        <p class="card-hint">total ÷ 2</p>
+      </div>
+
+      <!-- Card: Núcleo 1 -->
+      <div class="card card--nucleo" id="card-nucleo1">
+        <div class="nucleo-header">
+          <div>
+            <p class="card-label">Núcleo 1</p>
+            <p class="nucleo-integrantes">Ale &amp; Edu</p>
+          </div>
+          <span class="nucleo-icon">👫</span>
+        </div>
+        <p class="card-value" id="pagado-nucleo1">$0,00</p>
+        <p class="card-hint">total pagado</p>
+        <div class="saldo-container">
+          <span class="saldo-label">Saldo:</span>
+          <span class="saldo-valor" id="saldo-nucleo1">$0,00</span>
+          <span class="saldo-badge" id="badge-nucleo1">Al día ✓</span>
+        </div>
+      </div>
+
+      <!-- Card: Núcleo 2 -->
+      <div class="card card--nucleo" id="card-nucleo2">
+        <div class="nucleo-header">
+          <div>
+            <p class="card-label">Núcleo 2</p>
+            <p class="nucleo-integrantes">Adri &amp; Andy</p>
+          </div>
+          <span class="nucleo-icon">👫</span>
+        </div>
+        <p class="card-value" id="pagado-nucleo2">$0,00</p>
+        <p class="card-hint">total pagado</p>
+        <div class="saldo-container">
+          <span class="saldo-label">Saldo:</span>
+          <span class="saldo-valor" id="saldo-nucleo2">$0,00</span>
+          <span class="saldo-badge" id="badge-nucleo2">Al día ✓</span>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ── FORMULARIO ── -->
+    <section class="section-form" aria-label="Ingresar nuevo gasto">
+      <div class="section-header">
+        <h2 class="section-title">➕ Nuevo Gasto</h2>
+      </div>
+
+      <form id="form-gasto" class="form-gasto" novalidate>
+
+        <!-- Select: Usuario -->
+        <div class="field-group">
+          <label class="field-label" for="select-usuario">¿Quién pagó?</label>
+          <div class="select-wrapper">
+            <select id="select-usuario" name="usuario" required>
+              <option value="" disabled selected>Seleccioná una persona…</option>
+              <option value="Ale">Ale</option>
+              <option value="Edu">Edu</option>
+              <option value="Adri">Adri</option>
+              <option value="Andy">Andy</option>
+            </select>
+            <span class="select-arrow">▾</span>
+          </div>
+        </div>
+
+        <!-- Input: Detalle -->
+        <div class="field-group">
+          <label class="field-label" for="input-detalle">¿Qué se compró?</label>
+          <input
+            type="text"
+            id="input-detalle"
+            name="detalle"
+            placeholder="Ej: Torta, bebidas, globos…"
+            maxlength="200"
+            required
+          />
+        </div>
+
+        <!-- Input: Monto -->
+        <div class="field-group">
+          <label class="field-label" for="input-monto">Monto ($)</label>
+          <div class="input-monto-wrapper">
+            <span class="input-prefix">$</span>
+            <input
+              type="number"
+              id="input-monto"
+              name="monto"
+              placeholder="0.00"
+              min="0.01"
+              step="0.01"
+              required
+            />
+          </div>
+        </div>
+
+        <!-- Botón Guardar -->
+        <button type="submit" id="btn-guardar" class="btn-primary">
+          <span class="btn-text">Guardar Gasto</span>
+          <span class="btn-spinner" hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+            </svg>
+          </span>
+        </button>
+
+        <!-- Feedback -->
+        <div id="form-feedback" class="form-feedback" hidden></div>
+
+      </form>
+    </section>
+
+    <!-- ── HISTORIAL ── -->
+    <section class="section-historial" aria-label="Historial de gastos">
+      <div class="section-header">
+        <h2 class="section-title">📋 Historial de Gastos</h2>
+        <span class="historial-count" id="historial-count">0 registros</span>
+      </div>
+
+      <!-- Estado de carga -->
+      <div id="tabla-loading" class="tabla-estado">
+        <div class="loading-spinner"></div>
+        <p>Cargando registros…</p>
+      </div>
+
+      <!-- Estado vacío -->
+      <div id="tabla-vacia" class="tabla-estado" hidden>
+        <span class="estado-emoji">🛒</span>
+        <p>Todavía no hay gastos registrados.</p>
+        <p class="estado-hint">¡Usá el formulario para agregar el primero!</p>
+      </div>
+
+      <!-- Tabla -->
+      <div class="tabla-wrapper" id="tabla-wrapper" hidden>
+        <table class="tabla-gastos" id="tabla-gastos">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Quién</th>
+              <th>Núcleo</th>
+              <th>Detalle</th>
+              <th class="col-monto">Monto</th>
+            </tr>
+          </thead>
+          <tbody id="tabla-body">
+            <!-- Filas generadas por JS -->
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  <footer class="app-footer">
+    <p>GastosCumple · Hecho con ❤️ · <span id="anio"></span></p>
+  </footer>
+
+  <!-- Script principal (módulo ES6) -->
+  <script type="module" src="app.js"></script>
+
+</body>
+</html>
